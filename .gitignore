@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.venv/
+env/
+.env/
+
+# Sons gerados na primeira execução
+assets/sounds/*.wav
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Local config (se tiver dados sensíveis)
+# config.json
+# pet_state.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test coverage
+htmlcov/
+.coverage
+.pytest_cache/

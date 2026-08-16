@@ -1,0 +1,42 @@
+{
+    "pet": {
+        "type": "robot",
+        "name": "Foqui",
+        "scale": 1.86,
+        "opacity": 1.0
+    },
+    "position": {
+        "x": 1189,
+        "y": 370
+    },
+    "mode": "relax",
+    "presence": "showy",
+    "behavior": {
+        "react_to_activity": true,
+        "night_mode_auto": true,
+        "night_mode_start": 22,
+        "night_mode_end": 6,
+        "movement_intensity": "lively",
+        "detect_meetings": true
+    },
+    "bubbles": {
+        "enabled": true,
+        "style": "speech",
+        "frequency": "chatty",
+        "duration_ms": 4200
+    },
+    "sound": {
+        "enabled": false,
+        "volume": 0.25
+    },
+    "hotkeys": {
+        "toggle_visibility": "ctrl+shift+f",
+        "cycle_mode": "ctrl+shift+m",
+        "open_settings": "ctrl+shift+o"
+    },
+    "system": {
+        "start_with_windows": true,
+        "start_minimized": false,
+        "onboarding_done": true
+    }
+}
