@@ -356,21 +356,36 @@ class AnimationManager:
             painter.drawArc(QRect(33, 12, 14, 14), 20 * 16, 140 * 16)
             return
 
-        eye_white = QColor(255, 255, 255)
+        # Olhos maiores e com contorno (em vez de brancos chapados sem
+        # borda), pra ficar mais parecido com o traço do protótipo em SVG.
+        eye_white = QColor(252, 254, 253)
         gaze_dx = max(-3.0, min(3.0, gaze * 4))
-        height = 8 if state == "half" else 16
-        y_off = 16 if state == "half" else 12
+        height = 9 if state == "half" else 18
+        y_off = 15 if state == "half" else 11
+
+        painter.setPen(QPen(outline, 1.4))
+        painter.setBrush(eye_white)
+        painter.drawEllipse(15, y_off, 18, height)
+        painter.drawEllipse(31, y_off, 18, height)
+
+        pupil_size = 9 if state == "wide" else 7
+        pupil_y = y_off + max(1, height // 2 - pupil_size // 2)
+        cx_l, cx_r = 24 + gaze_dx, 40 + gaze_dx
+        cy = pupil_y + pupil_size / 2
 
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(eye_white)
-        painter.drawEllipse(16, y_off, 16, height)
-        painter.drawEllipse(32, y_off, 16, height)
-
-        pupil_size = 8 if state == "wide" else 6
-        pupil_y = y_off + max(1, height // 2 - pupil_size // 2)
         painter.setBrush(eye_pupil)
-        painter.drawEllipse(QPointF(22 + gaze_dx, pupil_y + pupil_size / 2), pupil_size / 2, pupil_size / 2)
-        painter.drawEllipse(QPointF(38 + gaze_dx, pupil_y + pupil_size / 2), pupil_size / 2, pupil_size / 2)
+        painter.drawEllipse(QPointF(cx_l, cy), pupil_size / 2, pupil_size / 2)
+        painter.drawEllipse(QPointF(cx_r, cy), pupil_size / 2, pupil_size / 2)
+
+        # Brilho (glint) fixo no canto da pupila - é o que dá vida ao
+        # olhar no protótipo; some nos olhos semicerrados, ficam pequenos
+        # demais pra caber.
+        if state != "half":
+            glint = pupil_size * 0.3
+            painter.setBrush(QColor(255, 255, 255, 235))
+            painter.drawEllipse(QPointF(cx_l + pupil_size * 0.2, cy - pupil_size * 0.22), glint, glint)
+            painter.drawEllipse(QPointF(cx_r + pupil_size * 0.2, cy - pupil_size * 0.22), glint, glint)
 
     def _draw_mouth(self, painter: QPainter, state: str = "smile"):
         """Boca - muda de forma pra transmitir o que o pet tá fazendo."""
