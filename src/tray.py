@@ -155,12 +155,6 @@ class TrayIcon(QSystemTrayIcon):
         status_action.triggered.connect(self.stats_requested.emit)
         menu.addAction(status_action)
 
-        # Configurações
-        settings_action = QAction("⚙️  Configurações", menu)
-        settings_action.setShortcut("Ctrl+Shift+O")
-        settings_action.triggered.connect(self.settings_requested.emit)
-        menu.addAction(settings_action)
-
         menu.addSeparator()
 
         # Sair

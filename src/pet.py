@@ -246,7 +246,7 @@ class Pet(QObject):
                 return
 
         if self.mood == Mood.CONTENT:
-            if random.random() < 0.08 * variation:
+            if random.random() < 0.01:  # Muito raro - apenas ocasionalmente
                 self._play_animation(Animation.HAPPY_JUMP)
                 return
 

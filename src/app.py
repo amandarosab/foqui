@@ -141,7 +141,6 @@ class FoquiApp(QObject):
             current_mode=self.config["mode"]
         )
         self.tray.toggle_visibility_requested.connect(self.toggle_visibility)
-        self.tray.settings_requested.connect(self.show_settings)
         self.tray.feed_requested.connect(self.feed_pet)
         self.tray.stats_requested.connect(self.show_status)
         self.tray.mode_requested.connect(self.set_mode)
@@ -402,23 +401,12 @@ class FoquiApp(QObject):
         QTimer.singleShot(900, lambda: self._say("hello", force=True))
 
     def show_settings(self):
-        """Mostra janela de configurações."""
-        if self.settings_window is None:
-            self.settings_window = SettingsWindow(self.config)
-            self.settings_window.settings_changed.connect(self._on_settings_changed)
-            self.settings_window.preview_changed.connect(self._on_settings_preview)
-            self.settings_window.preview_cancelled.connect(self._on_settings_cancelled)
-        else:
-            self.settings_window.refresh(self.config)
-
-        self.settings_window.show()
-        self.settings_window.raise_()
-        self.settings_window.activateWindow()
+        """Configurações desabilitadas - interface simplificada."""
+        pass
 
     def _on_settings_preview(self, scale: float, opacity: float):
         """Pré-visualização ao vivo de tamanho e opacidade."""
-        self.pet_window.set_scale(scale)
-        self.pet_window.set_opacity(opacity)
+        pass
 
     def _on_settings_cancelled(self):
         """Fechou sem salvar: volta ao que estava valendo."""

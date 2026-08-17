@@ -70,27 +70,27 @@ class AnimationManager:
     BODY_DY = 20
 
     # Configuração das animações - frames, loop, e agora o fps próprio.
-    # A regra: quanto mais brusco o gesto, mais alto o fps.
+    # A regra: quanto mais lento/suave, mais baixo o fps.
     ANIMATION_CONFIG = {
-        "idle_breathe": {"frames": 24, "loop": True,  "fps": 12}, # Respiração lenta
-        "idle_blink":   {"frames": 8,  "loop": False, "fps": 24}, # Blink rápido
-        "idle_look":    {"frames": 16, "loop": False, "fps": 14},
+        "idle_breathe": {"frames": 60, "loop": True,  "fps": 4},  # MUITO lento, 4fps = respiração suave
+        "idle_blink":   {"frames": 8,  "loop": False, "fps": 24}, # Rápido, piscar natural
+        "idle_look":    {"frames": 16, "loop": False, "fps": 8},  # Lento e elegante
         "happy_jump":   {"frames": 20, "loop": False, "fps": 20}, # Pulo elástico
-        "walk_right":   {"frames": 16, "loop": False, "fps": 16}, # Caminhada para a direita
-        "walk_left":    {"frames": 16, "loop": False, "fps": 16}, # Caminhada para a esquerda
-        "pet_reaction": {"frames": 12, "loop": False, "fps": 18}, # Reação ao carinho
-        "yawn":         {"frames": 14, "loop": False, "fps": 16}, # Bocejo
-        "eat":          {"frames": 12, "loop": False, "fps": 14}, # Comer
-        "curious":      {"frames": 10, "loop": False, "fps": 14}, # Pose curiosa
-        "sleep_enter":  {"frames": 12, "loop": False, "fps": 12}, # Entrando no sono
-        "sleep_loop":   {"frames": 16, "loop": True,  "fps": 8},  # Dormindo
-        "sleep_exit":   {"frames": 12, "loop": False, "fps": 12}, # Acordando
-        "crochet":      {"frames": 20, "loop": True,  "fps": 12}, # Crochê
-        "music":        {"frames": 16, "loop": True,  "fps": 14}, # Ouvindo música
-        "coffee":       {"frames": 12, "loop": True,  "fps": 10}, # Tomando café
-        "apple":        {"frames": 12, "loop": False, "fps": 14}, # Comendo maçã
-        "chocolate":    {"frames": 12, "loop": False, "fps": 14}, # Comendo chocolate
-        "water":        {"frames": 10, "loop": False, "fps": 12}, # Bebendo água
+        "walk_right":   {"frames": 16, "loop": False, "fps": 8},  # Caminhada lenta
+        "walk_left":    {"frames": 16, "loop": False, "fps": 8},  # Caminhada lenta
+        "pet_reaction": {"frames": 12, "loop": False, "fps": 14}, # Reação ao carinho
+        "yawn":         {"frames": 20, "loop": False, "fps": 8},  # Bocejo lento e natural
+        "eat":          {"frames": 12, "loop": False, "fps": 10}, # Comer moderado
+        "curious":      {"frames": 10, "loop": False, "fps": 8},  # Curiosidade lenta
+        "sleep_enter":  {"frames": 12, "loop": False, "fps": 6},  # Entrando no sono lentamente
+        "sleep_loop":   {"frames": 16, "loop": True,  "fps": 3},  # Dormindo MUITO lento
+        "sleep_exit":   {"frames": 12, "loop": False, "fps": 6},  # Acordando lentamente
+        "crochet":      {"frames": 20, "loop": True,  "fps": 6},  # Crochê lento e concentrado
+        "music":        {"frames": 16, "loop": True,  "fps": 6},  # Música lenta
+        "coffee":       {"frames": 12, "loop": True,  "fps": 5},  # Café bem lento
+        "apple":        {"frames": 12, "loop": False, "fps": 8},  # Maçã
+        "chocolate":    {"frames": 12, "loop": False, "fps": 8},  # Chocolate
+        "water":        {"frames": 10, "loop": False, "fps": 6},  # Água lenta
     }
 
     # Cores de corpo do placeholder por tipo.
@@ -267,46 +267,48 @@ class AnimationManager:
             painter.drawEllipse(rect)
 
     def _draw_frog_body(self, painter: QPainter, body_color: QColor):
-        """Corpo do sapo Foqui: achatado e com patas laterais."""
+        """Corpo do sapo Foqui: blob achatado com patas e barriguinha."""
         cx = 32
         dk = body_color.darker(125)
         lt = body_color.lighter(114)
 
         painter.setPen(Qt.PenStyle.NoPen)
 
-        # patas traseiras (laterais, atrás do corpo)
-        painter.setBrush(dk)
-        painter.drawEllipse(QRectF(cx - 32, 42, 15, 15))
-        painter.drawEllipse(QRectF(cx + 17, 42, 15, 15))
-
-        # corpo achatado (path com base larga e topo curvo)
+        # Corpo blob achatado (formato clássico de sapo fofo)
         body = QPainterPath()
-        body.moveTo(cx - 30, 42)
-        body.cubicTo(cx - 34, 22, cx - 18, 14, cx, 14)
-        body.cubicTo(cx + 18, 14, cx + 34, 22, cx + 30, 42)
-        body.cubicTo(cx + 28, 56, cx + 16, 59, cx, 59)
-        body.cubicTo(cx - 16, 59, cx - 28, 56, cx - 30, 42)
+        body.moveTo(cx - 28, 45)
+        body.cubicTo(cx - 32, 30, cx - 30, 18, cx - 20, 14)
+        body.cubicTo(cx - 10, 10, cx + 10, 10, cx + 20, 14)
+        body.cubicTo(cx + 30, 18, cx + 32, 30, cx + 28, 45)
+        body.cubicTo(cx + 26, 55, cx + 16, 60, cx, 60)
+        body.cubicTo(cx - 16, 60, cx - 26, 55, cx - 28, 45)
         body.closeSubpath()
 
-        grad = QLinearGradient(0, 14, 0, 59)
+        grad = QLinearGradient(0, 10, 0, 60)
         grad.setColorAt(0.0, lt)
-        grad.setColorAt(1.0, body_color)
+        grad.setColorAt(0.7, body_color)
+        grad.setColorAt(1.0, dk)
         painter.setBrush(grad)
         painter.drawPath(body)
 
-        # patas dianteiras (na frente, com 3 dedinhos)
-        for fx in (cx - 15, cx + 15):
+        # Patas traseiras (laterais, atrás)
+        painter.setBrush(dk)
+        painter.drawEllipse(QRectF(cx - 30, 45, 12, 12))
+        painter.drawEllipse(QRectF(cx + 18, 45, 12, 12))
+
+        # Patas dianteiras (3 dedinhos cada)
+        for fx in (cx - 16, cx + 16):
             painter.setBrush(body_color)
-            painter.drawEllipse(QRectF(fx - 9, 51, 18, 11))
+            painter.drawEllipse(QRectF(fx - 8, 52, 16, 10))
             painter.setPen(QPen(dk, 1))
             for d in (-4, 0, 4):
-                painter.drawLine(int(fx + d), 59, int(fx + d), 62)
+                painter.drawLine(int(fx + d), 60, int(fx + d), 63)
             painter.setPen(Qt.PenStyle.NoPen)
 
-        # narinas
+        # Narinas pequenas
         painter.setBrush(dk)
-        painter.drawEllipse(QPointF(cx - 4, 32), 1.3, 1.3)
-        painter.drawEllipse(QPointF(cx + 4, 32), 1.3, 1.3)
+        painter.drawEllipse(QPointF(cx - 4, 30), 1.3, 1.3)
+        painter.drawEllipse(QPointF(cx + 4, 30), 1.3, 1.3)
 
     def _draw_cheeks(self, painter: QPainter, wobble: float = 0.0):
         """Bochechas rosadas com wobble (tremor residual)."""
@@ -344,9 +346,6 @@ class AnimationManager:
         gaze_dx = max(-1.2, min(1.2, gaze))
         eyes = [(cx - 10, 17 + lag), (cx + 10, 17 + lag)]
 
-        # Olho fechado contínuo: pálpebra desce suavemente.
-        # Não usamos estado discreto "closed" aqui, mas sim a openness contínua.
-        
         wide = state == "wide"
         
         for (ex, ey) in eyes:
@@ -390,37 +389,48 @@ class AnimationManager:
     # === Poses por animação ===
 
     def _frame_idle_breathe(self, painter: QPainter, i: int, n: int):
-        # Respiração assimétrica: inspira devagar, solta um tico mais rápido.
-        # O olho segue o corpo com lag.
-        
+        # Respiração muito suave e natural
         phase = (i % n) / n
-        b = breathe(phase)                 # 0..1 assimétrico
-        signed = b * 2 - 1                  # -1..1
+        b = breathe(phase, amplitude=0.15, frequency=0.5)  # Respiração MUITO suave
+        signed = b * 2 - 1  # -1..1
         
         # lag: usa a fase anterior pra posicionar o olho um passo atrás
         prev_phase = ((i - 1) % n) / n
-        b_prev = breathe(prev_phase) * 2 - 1
+        b_prev = breathe(prev_phase, amplitude=0.15, frequency=0.5) * 2 - 1
         eye_lag = (signed - b_prev) * 1.5
 
-        # Blink espontâneo raro
+        # Blink ocasional sutil
         blink_at = int(n * 0.7)
         openness = 1.0
-        if blink_at <= i < blink_at + 3:
-            openness = blink_curve((i - blink_at) / 3)
+        if blink_at <= i < blink_at + 2:
+            openness = blink_curve((i - blink_at) / 2)
 
         self._draw_pet(
             painter,
-            bounce=-1.4 * signed,
-            squash=1.0 - 0.022 * signed,
-            stretch=1.0 + 0.038 * signed,
+            bounce=-0.8 * signed,  # Movimento bem sutil
+            squash=1.0 - 0.015 * signed,  # Menos compressão
+            stretch=1.0 + 0.025 * signed,  # Menos esticamento
             eye_openness=openness,
             eye_lag=eye_lag,
+            mouth_state="rest"  # Boca de repouso
         )
 
     def _frame_idle_blink(self, painter: QPainter, i: int, n: int):
-        # Blink contínuo com curva de reflexo (fecha no estalo, abre devagar).
-        openness = blink_curve(self._norm(i, n))
-        self._draw_pet(painter, eye_openness=openness)
+        # Blink rápido e natural - os olhos fecham e abrem suavemente
+        t = self._norm(i, n)
+        
+        # Blink curve: fecha nos primeiros 20%, fica fechado no meio, abre depois
+        if t < 0.2:
+            # Fechando - rápido
+            openness = 1.0 - (t / 0.2) * 0.9  # 1.0 -> 0.1
+        elif t < 0.4:
+            # Fechado por um pouco
+            openness = 0.1
+        else:
+            # Abrindo - um pouco mais lento
+            openness = 0.1 + ((t - 0.4) / 0.6) * 0.9  # 0.1 -> 1.0
+        
+        self._draw_pet(painter, eye_openness=openness, mouth_state="rest")
 
     def _frame_idle_look(self, painter: QPainter, i: int, n: int):
         # Olhar em volta com antecipação (back leve).
