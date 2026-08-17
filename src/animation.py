@@ -11,7 +11,10 @@ import math
 from pathlib import Path
 from typing import Callable, Dict, Optional, List
 
-from PyQt6.QtGui import QPixmap, QPainter, QColor, QPolygon, QPen, QFont
+from PyQt6.QtGui import (
+    QPixmap, QPainter, QColor, QPolygon, QPen, QFont,
+    QLinearGradient, QRadialGradient,
+)
 from PyQt6.QtCore import Qt, QPoint, QPointF, QRect
 
 
@@ -64,13 +67,13 @@ class AnimationManager:
 
     # Configuração das animações - quantos frames cada uma tem e se repete.
     ANIMATION_CONFIG = {
-        "idle_breathe": {"frames": 6, "loop": True},
+        "idle_breathe": {"frames": 16, "loop": True},
         "idle_blink": {"frames": 4, "loop": False},
-        "idle_look": {"frames": 8, "loop": False},
-        "walk_right": {"frames": 8, "loop": True},
-        "walk_left": {"frames": 8, "loop": True},
+        "idle_look": {"frames": 12, "loop": False},
+        "walk_right": {"frames": 18, "loop": True},
+        "walk_left": {"frames": 18, "loop": True},
         "sleep_enter": {"frames": 5, "loop": False},
-        "sleep_loop": {"frames": 6, "loop": True},
+        "sleep_loop": {"frames": 16, "loop": True},
         "sleep_exit": {"frames": 5, "loop": False},
         "yawn": {"frames": 8, "loop": False},
         "eat": {"frames": 10, "loop": False},
@@ -235,6 +238,10 @@ class AnimationManager:
         """
         body_color = self.PLACEHOLDER_COLORS.get(self.pet_type, self.PLACEHOLDER_COLORS["frog"])
 
+        # Sombra fixa no chão - não acompanha o bounce, só encolhe um
+        # pouco quando o pet sobe, pra dar noção de profundidade.
+        self._draw_shadow(painter, bounce)
+
         painter.save()
         painter.translate(self.BODY_DX, self.BODY_DY + bounce)
 
@@ -251,20 +258,10 @@ class AnimationManager:
         # Acessórios atrás do corpo (orelhas, antena) para não ficarem escondidos
         self._draw_accessory_back(painter)
 
-        # Corpo oval
-        painter.setBrush(body_color)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawEllipse(12, 20, 40, 35)
-
-        self._draw_eyes(painter, eye_state, gaze)
+        self._draw_body(painter, body_color)
+        self._draw_eyes(painter, eye_state, gaze, body_color)
         self._draw_mouth(painter, mouth_state)
-
-        # Bochechas (rosa claro)
-        blush = QColor(255, 200, 200, 100)
-        painter.setBrush(blush)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawEllipse(10, 32, 10, 8)
-        painter.drawEllipse(44, 32, 10, 8)
+        self._draw_cheeks(painter)
 
         # Acessórios na frente do corpo (bigodes, focinho)
         self._draw_accessory_front(painter, body_color)
@@ -274,9 +271,57 @@ class AnimationManager:
 
         painter.restore()
 
-    def _draw_eyes(self, painter: QPainter, state: str = "open", gaze: float = 0.0):
+    def _draw_shadow(self, painter: QPainter, bounce: float):
+        """Sombra suave e fixa no chão, atrás de qualquer transformação do
+        corpo - dá noção de profundidade sem se mexer junto com o bounce."""
+        cx, cy = self.BODY_DX + 32, self.BODY_DY + 58
+        lift = max(0.0, -bounce)
+        scale = max(0.55, 1.0 - lift * 0.05)
+        rx, ry = 20 * scale, 5 * scale
+
+        gradient = QRadialGradient(QPointF(0, 0), 1.0)
+        gradient.setColorAt(0.0, QColor(0, 0, 0, 70))
+        gradient.setColorAt(1.0, QColor(0, 0, 0, 0))
+
+        painter.save()
+        painter.translate(cx, cy)
+        painter.scale(rx, ry)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(gradient)
+        painter.drawEllipse(QPointF(0, 0), 1.0, 1.0)
+        painter.restore()
+
+    def _draw_body(self, painter: QPainter, body_color: QColor):
+        """Corpo com gradiente (claro em cima, mais fechado embaixo) e um
+        brilho sutil no topo - traço mais fofinho que uma cor chapada."""
+        rect = QRect(12, 20, 40, 35)
+
+        gradient = QLinearGradient(0, rect.top(), 0, rect.bottom())
+        gradient.setColorAt(0.0, body_color.lighter(122))
+        gradient.setColorAt(1.0, body_color)
+
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(gradient)
+        painter.drawEllipse(rect)
+
+        painter.setBrush(QColor(255, 255, 255, 35))
+        painter.drawEllipse(18, 24, 20, 10)
+
+    def _draw_cheeks(self, painter: QPainter):
+        """Bochechas com gradiente radial (esmaece nas bordas) em vez de
+        uma elipse sólida - efeito parecido com o blur do protótipo CSS."""
+        for cx in (15, 49):
+            gradient = QRadialGradient(QPointF(cx, 36), 7)
+            gradient.setColorAt(0.0, QColor(255, 190, 190, 150))
+            gradient.setColorAt(1.0, QColor(255, 190, 190, 0))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(gradient)
+            painter.drawEllipse(QPointF(cx, 36), 7, 5)
+
+    def _draw_eyes(self, painter: QPainter, state: str = "open", gaze: float = 0.0, body_color: Optional[QColor] = None):
         """Olhos - redondos por padrão, quadrados (estilo LED) para o robô."""
         eye_pupil = QColor(40, 40, 40)
+        outline = (body_color or self.PLACEHOLDER_COLORS["frog"]).darker(140)
 
         if self.pet_type == "robot":
             led_bright = QColor(120, 220, 255)
@@ -414,12 +459,15 @@ class AnimationManager:
         self._draw_pet(painter, gaze=gaze, tilt=gaze * 0.06)
 
     def _frame_walk(self, painter: QPainter, i: int, n: int, direction: int):
-        hop = abs(self._osc(i, n, cycles=2.0))
+        hop_raw = self._osc(i, n, cycles=2.0)
+        hop = abs(hop_raw)
 
         def feet(p: QPainter):
             p.setBrush(QColor(70, 70, 70, 160))
             p.setPen(Qt.PenStyle.NoPen)
-            step = 4 if (i // 2) % 2 == 0 else -4
+            # Pé alternado segue o mesmo osc. do salto - continua em fase
+            # com o corpo não importa quantos frames a animação tenha.
+            step = 4 if hop_raw >= 0 else -4
             p.drawEllipse(18 + step, 52, 10, 6)
             p.drawEllipse(36 - step, 52, 10, 6)
 
