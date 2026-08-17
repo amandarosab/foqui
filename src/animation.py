@@ -76,6 +76,21 @@ class AnimationManager:
         "idle_blink":   {"frames": 8,  "loop": False, "fps": 24}, # Blink rápido
         "idle_look":    {"frames": 16, "loop": False, "fps": 14},
         "happy_jump":   {"frames": 20, "loop": False, "fps": 20}, # Pulo elástico
+        "walk_right":   {"frames": 16, "loop": False, "fps": 16}, # Caminhada para a direita
+        "walk_left":    {"frames": 16, "loop": False, "fps": 16}, # Caminhada para a esquerda
+        "pet_reaction": {"frames": 12, "loop": False, "fps": 18}, # Reação ao carinho
+        "yawn":         {"frames": 14, "loop": False, "fps": 16}, # Bocejo
+        "eat":          {"frames": 12, "loop": False, "fps": 14}, # Comer
+        "curious":      {"frames": 10, "loop": False, "fps": 14}, # Pose curiosa
+        "sleep_enter":  {"frames": 12, "loop": False, "fps": 12}, # Entrando no sono
+        "sleep_loop":   {"frames": 16, "loop": True,  "fps": 8},  # Dormindo
+        "sleep_exit":   {"frames": 12, "loop": False, "fps": 12}, # Acordando
+        "crochet":      {"frames": 20, "loop": True,  "fps": 12}, # Crochê
+        "music":        {"frames": 16, "loop": True,  "fps": 14}, # Ouvindo música
+        "coffee":       {"frames": 12, "loop": True,  "fps": 10}, # Tomando café
+        "apple":        {"frames": 12, "loop": False, "fps": 14}, # Comendo maçã
+        "chocolate":    {"frames": 12, "loop": False, "fps": 14}, # Comendo chocolate
+        "water":        {"frames": 10, "loop": False, "fps": 12}, # Bebendo água
     }
 
     # Cores de corpo do placeholder por tipo.
@@ -98,6 +113,21 @@ class AnimationManager:
             "idle_blink": self._frame_idle_blink,
             "idle_look": self._frame_idle_look,
             "happy_jump": self._frame_happy_jump,
+            "walk_right": self._frame_walk_right,
+            "walk_left": self._frame_walk_left,
+            "pet_reaction": self._frame_pet_reaction,
+            "yawn": self._frame_yawn,
+            "eat": self._frame_eat,
+            "curious": self._frame_curious,
+            "sleep_enter": self._frame_sleep_enter,
+            "sleep_loop": self._frame_sleep_loop,
+            "sleep_exit": self._frame_sleep_exit,
+            "crochet": self._frame_crochet,
+            "music": self._frame_music,
+            "coffee": self._frame_coffee,
+            "apple": self._frame_apple,
+            "chocolate": self._frame_chocolate,
+            "water": self._frame_water,
         }
 
         # Carrega todas as animações
@@ -448,6 +478,159 @@ class AnimationManager:
             eye_lag=eye_lag,
             cheek_wobble=cheek_wobble,
         )
+
+    def _frame_walk_right(self, painter: QPainter, i: int, n: int):
+        # Caminhada para a direita com balanço natural
+        t = self._norm(i, n)
+        progress = t * 15  # Movimento horizontal
+        bounce = -math.sin(math.pi * t) * 2  # Salto ao caminhar
+        tilt = math.sin(2 * math.pi * t) * 0.05  # Oscilação
+        
+        painter.save()
+        painter.translate(progress, 0)  # Move para a direita
+        self._draw_pet(painter, bounce=bounce, tilt=tilt)
+        painter.restore()
+
+    def _frame_walk_left(self, painter: QPainter, i: int, n: int):
+        # Caminhada para a esquerda com balanço natural
+        t = self._norm(i, n)
+        progress = -t * 15  # Movimento horizontal (esquerda)
+        bounce = -math.sin(math.pi * t) * 2  # Salto ao caminhar
+        tilt = -math.sin(2 * math.pi * t) * 0.05  # Oscilação
+        
+        painter.save()
+        painter.translate(progress, 0)  # Move para a esquerda
+        self._draw_pet(painter, bounce=bounce, tilt=tilt)
+        painter.restore()
+
+    def _frame_pet_reaction(self, painter: QPainter, i: int, n: int):
+        # Reação ao carinho - pulo pequeno e tremor
+        t = self._norm(i, n)
+        
+        if t < 0.3:
+            # Pulo inicial
+            b = ease_out_cubic(t / 0.3)
+            bounce = -8 * b
+            squash = 1.0 + 0.1 * b
+            stretch = 1.0 - 0.06 * b
+        else:
+            # Amortecimento
+            s = (t - 0.3) / 0.7
+            bounce = -8 * (1 - ease_out_cubic(s))
+            squash = 1.0 + 0.1 * (1 - ease_out_cubic(s))
+            stretch = 1.0 - 0.06 * (1 - ease_out_cubic(s))
+        
+        self._draw_pet(painter, bounce=bounce, squash=squash, stretch=stretch)
+
+    def _frame_yawn(self, painter: QPainter, i: int, n: int):
+        # Bocejo - abre a boca bem grande
+        t = self._norm(i, n)
+        
+        # Primeiro abre a boca (0 a 0.4), depois fecha (0.4 a 1.0)
+        if t < 0.4:
+            mouth_state = "smile"  # Placeholder - seria "yawn" num sistema real
+            eye_openness = ease_out_cubic(t / 0.4)
+        else:
+            mouth_state = "smile"
+            eye_openness = ease_in_cubic((1.0 - t) / 0.6)
+        
+        self._draw_pet(painter, mouth_state=mouth_state, eye_openness=eye_openness)
+
+    def _frame_eat(self, painter: QPainter, i: int, n: int):
+        # Comendo - movimento repetido de mastigação
+        t = self._norm(i, n)
+        squash = 1.0 + 0.08 * math.sin(t * 6 * math.pi)  # Mastigação rítmica
+        bounce = math.sin(t * 4 * math.pi) * 1.5  # Movimentação
+        
+        self._draw_pet(painter, squash=squash, bounce=bounce)
+
+    def _frame_curious(self, painter: QPainter, i: int, n: int):
+        # Pose curiosa - cabeça inclinada, olhando para cima
+        t = self._norm(i, n)
+        tilt = ease_in_out_sine(t) * 0.15  # Inclinação de cabeça
+        gaze = math.sin(math.pi * t) * 0.5  # Olhar explorando
+        
+        self._draw_pet(painter, tilt=tilt, gaze=gaze)
+
+    def _frame_sleep_enter(self, painter: QPainter, i: int, n: int):
+        # Entrando no sono - pisca e vai fechando os olhos
+        t = self._norm(i, n)
+        openness = ease_in_cubic(1.0 - t)  # Fecha os olhos gradualmente
+        bounce = -math.sin(math.pi * t) * 0.5  # Movimento para baixo
+        
+        self._draw_pet(painter, eye_openness=openness, bounce=bounce)
+
+    def _frame_sleep_loop(self, painter: QPainter, i: int, n: int):
+        # Dormindo - respiração leve com olhos fechados
+        t = self._norm(i, n)
+        bounce = breathe(t, amplitude=0.5, frequency=0.5)  # Respiração bem lenta
+        
+        self._draw_pet(painter, eye_openness=0.0, bounce=bounce - 1.0)
+
+    def _frame_sleep_exit(self, painter: QPainter, i: int, n: int):
+        # Acordando - estica e abre os olhos
+        t = self._norm(i, n)
+        openness = ease_out_cubic(t)  # Abre os olhos gradualmente
+        bounce = math.sin(math.pi * t * 0.5) * 1.5  # Movimento de despertar
+        stretch = 1.0 + 0.1 * ease_in_cubic(t)  # Esticada
+        
+        self._draw_pet(painter, eye_openness=openness, bounce=bounce, stretch=stretch)
+
+    def _frame_crochet(self, painter: QPainter, i: int, n: int):
+        # Crochê - movimento de mãos repetido
+        t = self._norm(i, n)
+        squash = 1.0 + 0.05 * math.sin(t * 8 * math.pi)  # Movimento de tecelagem
+        gaze = 0.3  # Olhando para o trabalho
+        
+        self._draw_pet(painter, squash=squash, gaze=gaze)
+
+    def _frame_music(self, painter: QPainter, i: int, n: int):
+        # Ouvindo música - balanço ritmado
+        t = self._norm(i, n)
+        tilt = math.sin(t * 4 * math.pi) * 0.1  # Balanço
+        bounce = math.sin(t * 4 * math.pi) * 2  # Pulo ritmado
+        
+        self._draw_pet(painter, tilt=tilt, bounce=bounce)
+
+    def _frame_coffee(self, painter: QPainter, i: int, n: int):
+        # Tomando café - movimento de beber
+        t = self._norm(i, n)
+        
+        # Sobe e desce a cada segundo
+        phase = (t * 2) % 1.0
+        if phase < 0.3:
+            bounce = ease_out_cubic(phase / 0.3) * 3  # Sobe
+        else:
+            bounce = ease_in_cubic((1.0 - phase) / 0.7) * 3  # Desce
+        
+        self._draw_pet(painter, bounce=bounce)
+
+    def _frame_apple(self, painter: QPainter, i: int, n: int):
+        # Comendo maçã - similar ao eat genérico
+        t = self._norm(i, n)
+        squash = 1.0 + 0.1 * math.sin(t * 6 * math.pi)
+        
+        self._draw_pet(painter, squash=squash)
+
+    def _frame_chocolate(self, painter: QPainter, i: int, n: int):
+        # Comendo chocolate - satisfeito
+        t = self._norm(i, n)
+        bounce = -math.sin(math.pi * t) * 1.5  # Pequeno pulo de alegria
+        squash = 1.0 + 0.08 * math.sin(t * 5 * math.pi)
+        
+        self._draw_pet(painter, bounce=bounce, squash=squash)
+
+    def _frame_water(self, painter: QPainter, i: int, n: int):
+        # Bebendo água - movimento de beber
+        t = self._norm(i, n)
+        
+        # Desce para beber, volta
+        if t < 0.5:
+            bounce = -ease_out_cubic(t / 0.5) * 4
+        else:
+            bounce = -4 + ease_in_cubic((t - 0.5) / 0.5) * 4
+        
+        self._draw_pet(painter, bounce=bounce)
 
     # === API Pública ===
 

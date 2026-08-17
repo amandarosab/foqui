@@ -1,11 +1,8 @@
 """
 SoundPlayer - Sons curtos e opcionais de interação
-
-Mudo por padrão (decisão de produto: som nunca deve assustar ninguém).
-Os arquivos são gerados na primeira execução, então o Foqui não depende
-de nenhum asset de áudio externo.
 """
 
+import logging
 from pathlib import Path
 import math
 import struct
@@ -19,11 +16,10 @@ try:
 except ImportError:
     MULTIMEDIA_AVAILABLE = False
 
+logger = logging.getLogger(__name__)
 
 SAMPLE_RATE = 44100
 
-# Cada som é uma sequência de (frequência Hz, duração ms).
-# Tons suaves e curtos - nada que pareça alerta de sistema.
 SOUNDS = {
     "pet": [(660, 70), (880, 90)],
     "feed": [(520, 80), (660, 70), (784, 110)],
@@ -40,7 +36,6 @@ def _write_wav(path: Path, notes):
         fade = max(1, count // 6)
 
         for i in range(count):
-            # Envelope de ataque/decaimento
             if i < fade:
                 envelope = i / fade
             elif i > count - fade:
@@ -88,9 +83,8 @@ class SoundPlayer:
                 effect.setSource(QUrl.fromLocalFile(str(file_path)))
                 effect.setVolume(self.volume)
                 self.effects[name] = effect
-            except Exception as e:
-                # Áudio nunca deve derrubar o app
-                print(f"Aviso: não foi possível preparar o som '{name}': {e}")
+            except Exception:
+                logger.exception(f"Aviso: não foi possível preparar o som '{name}'")
 
     def play(self, name: str):
         """Toca um som, se habilitado e disponível."""
