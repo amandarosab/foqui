@@ -1,13 +1,13 @@
 {
     "pet": {
-        "type": "robot",
+        "type": "frog",
         "name": "Foqui",
         "scale": 1.86,
         "opacity": 1.0
     },
     "position": {
-        "x": 1189,
-        "y": 370
+        "x": 861,
+        "y": 578
     },
     "mode": "relax",
     "presence": "showy",
