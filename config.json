@@ -2,12 +2,12 @@
     "pet": {
         "type": "frog",
         "name": "Foqui",
-        "scale": 1.86,
+        "scale": 2.0,
         "opacity": 1.0
     },
     "position": {
-        "x": 488,
-        "y": 752
+        "x": 356,
+        "y": 881
     },
     "mode": "relax",
     "presence": "showy",
@@ -21,7 +21,7 @@
     },
     "bubbles": {
         "enabled": true,
-        "style": "speech",
+        "style": "thought",
         "frequency": "chatty",
         "duration_ms": 4200
     },
